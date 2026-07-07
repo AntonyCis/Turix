@@ -1,0 +1,7 @@
+[mysqld]
+server-id=1
+log-bin=mysql-bin
+binlog-format=ROW
+binlog-do-db=turix_db
+sync_binlog=1
+innodb_flush_log_at_trx_commit=1

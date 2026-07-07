@@ -1,0 +1,38 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 20
+      name: "Carga normal"
+    - duration: 30
+      arrivalRate: 50
+      name: "Pico de tráfico"
+
+scenarios:
+  - name: "Flujo de usuario: navegar y comprar"
+    flow:
+      - get:
+          url: "/api/trips"
+      - think: 2
+      - get:
+          url: "/api/trips/1"
+      - think: 1
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "test@turix.ec"
+            password: "test123"
+          capture:
+            json: "$.token"
+            as: "authToken"
+      - post:
+          url: "/api/shop/checkout"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            items:
+              - trip_id: 1
+                quantity: 1

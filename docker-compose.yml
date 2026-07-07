@@ -1,0 +1,184 @@
+services:
+  # =============================================
+  # BALANCEADOR DE CARGA
+  # =============================================
+  nginx:
+    image: nginx:alpine
+    container_name: turix-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app-node-1
+      - app-node-2
+      - app-node-3
+    networks:
+      - frontend
+    restart: always
+
+  # =============================================
+  # NODOS DE APLICACIÓN (3 réplicas)
+  # =============================================
+  app-node-1:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: turix-app-1
+    environment:
+      - NODE_ID=node-1
+      - PORT=3000
+      - DB_MASTER_HOST=db_master
+      - DB_SLAVE_HOST=db_slave
+      - DB_NAME=turix_db
+      - DB_USER=turix_user
+      - DB_PASSWORD=turix_secret
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      db_master:
+        condition: service_healthy
+    networks:
+      - frontend
+      - backend
+    restart: always
+
+  app-node-2:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: turix-app-2
+    environment:
+      - NODE_ID=node-2
+      - PORT=3000
+      - DB_MASTER_HOST=db_master
+      - DB_SLAVE_HOST=db_slave
+      - DB_NAME=turix_db
+      - DB_USER=turix_user
+      - DB_PASSWORD=turix_secret
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      db_master:
+        condition: service_healthy
+    networks:
+      - frontend
+      - backend
+    restart: always
+
+  app-node-3:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: turix-app-3
+    environment:
+      - NODE_ID=node-3
+      - PORT=3000
+      - DB_MASTER_HOST=db_master
+      - DB_SLAVE_HOST=db_slave
+      - DB_NAME=turix_db
+      - DB_USER=turix_user
+      - DB_PASSWORD=turix_secret
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      db_master:
+        condition: service_healthy
+    networks:
+      - frontend
+      - backend
+    restart: always
+
+  # =============================================
+  # BASE DE DATOS - MASTER
+  # =============================================
+  db_master:
+    image: mysql:8.0
+    container_name: turix-db-master
+    command: --default-authentication-plugin=mysql_native_password --server-id=1 --log-bin=mysql-bin --binlog-format=ROW --binlog-do-db=turix_db --sync-binlog=1 --innodb-flush-log-at-trx-commit=1
+    environment:
+      MYSQL_DATABASE: turix_db
+      MYSQL_USER: turix_user
+      MYSQL_PASSWORD: turix_secret
+      MYSQL_ROOT_PASSWORD: supersecreto
+    volumes:
+      - ./mysql/master/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_master_data:/var/lib/mysql
+    ports:
+      - "3316:3306"
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", "-psupersecreto"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  # =============================================
+  # BASE DE DATOS - SLAVE (RÉPLICA)
+  # =============================================
+  db_slave:
+    image: mysql:8.0
+    container_name: turix-db-slave
+    command: --default-authentication-plugin=mysql_native_password --server-id=2 --relay-log=relay-log --log-bin=mysql-bin --read-only=1 --binlog-do-db=turix_db
+    environment:
+      MYSQL_DATABASE: turix_db
+      MYSQL_USER: turix_user
+      MYSQL_PASSWORD: turix_secret
+      MYSQL_ROOT_PASSWORD: supersecreto
+    volumes:
+      - ./mysql/master/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_slave_data:/var/lib/mysql
+    ports:
+      - "3317:3306"
+    networks:
+      - backend
+    depends_on:
+      db_master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", "-psupersecreto"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  # =============================================
+  # ADMINISTRADOR DE BASE DE DATOS
+  # =============================================
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: turix-phpmyadmin
+    environment:
+      - PMA_HOSTS=db_master,db_slave
+      - PMA_PORTS=3306,3306
+      - PMA_USER=root
+      - PMA_PASSWORD=supersecreto
+    ports:
+      - "8081:80"
+    depends_on:
+      - db_master
+      - db_slave
+    networks:
+      - frontend
+      - backend
+    restart: always
+
+# =============================================
+# REDES
+# =============================================
+networks:
+  frontend:
+    driver: bridge
+    name: turix-frontend-net
+  backend:
+    driver: bridge
+    name: turix-backend-net
+    internal: true
+
+# =============================================
+# VOLÚMENES PERSISTENTES
+# =============================================
+volumes:
+  mysql_master_data:
+    name: turix-mysql-master
+  mysql_slave_data:
+    name: turix-mysql-slave
