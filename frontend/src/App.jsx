@@ -1,6 +1,10 @@
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import Lenis from 'lenis';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import Preloader from './components/Preloader';
 import Navbar from './components/Navbar';
 import ServerBadge from './components/ServerBadge';
 import LoginPage from './pages/LoginPage';
@@ -72,15 +76,62 @@ function AppRoutes() {
   );
 }
 
+function SmoothScroll({ children }) {
+  useEffect(() => {
+    const canUseSmoothScroll = window.matchMedia(
+      '(prefers-reduced-motion: no-preference) and (pointer: fine)'
+    ).matches;
+
+    if (!canUseSmoothScroll) return undefined;
+
+    const lenis = new Lenis({
+      duration: 0.9,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      touchMultiplier: 1,
+      syncTouch: false
+    });
+
+    let animationFrameId;
+    function raf(time) {
+      lenis.raf(time);
+      animationFrameId = requestAnimationFrame(raf);
+    }
+
+    animationFrameId = requestAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      lenis.destroy();
+    };
+  }, []);
+
+  return children;
+}
+
 function AppContent() {
+  const [ready, setReady] = useState(false);
+  const handlePreloaderDone = useCallback(() => setReady(true), []);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Navbar />
-      <main style={{ flex: 1 }}>
-        <AppRoutes />
-      </main>
-      <ServerBadge />
-    </div>
+    <SmoothScroll>
+      <AnimatePresence mode="wait">
+        {!ready && <Preloader onComplete={handlePreloaderDone} />}
+      </AnimatePresence>
+
+      {ready && (
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Navbar />
+          <main style={{ flex: 1 }}>
+            <AppRoutes />
+          </main>
+          <footer className="footer footer--premium">
+            <span className="footer__brand">turix <i>◆</i></span>
+            <span>Viajes que se sienten · Ecuador</span>
+            <span>© {new Date().getFullYear()}</span>
+          </footer>
+          <ServerBadge />
+        </div>
+      )}
+    </SmoothScroll>
   );
 }
 
