@@ -66,8 +66,8 @@ async function createTrip(req, res, next) {
     const [existing] = await pool.query('SELECT id FROM trips WHERE code = ?', [code.trim().toUpperCase()]);
     if (existing.length > 0) return res.status(409).json({ error: `El codigo de viaje "${code}" ya existe` });
     const [result] = await pool.query(
-      `INSERT INTO trips (code, name, description, destination, latitude, longitude, available_slots, category_id, price, duration_days, image_url, is_bookable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [code.trim().toUpperCase(), name.trim(), description.trim(), destination.trim(), coordinate(latitude), coordinate(longitude), parseInt(available_slots), parseInt(category_id), parseFloat(price || 0), parseInt(duration_days || 1), image_url || null, is_bookable === true || is_bookable === 'true']
+      `INSERT INTO trips (code, name, description, destination, latitude, longitude, available_slots, category_id, created_by_user_id, price, duration_days, image_url, is_bookable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [code.trim().toUpperCase(), name.trim(), description.trim(), destination.trim(), coordinate(latitude), coordinate(longitude), parseInt(available_slots), parseInt(category_id), req.user.id, parseFloat(price || 0), parseInt(duration_days || 1), image_url || null, is_bookable === true || is_bookable === 'true']
     );
     res.status(201).json({ message: 'Viaje creado exitosamente', trip: { id: result.insertId, code: code.trim().toUpperCase() } });
   } catch (err) { next(err); }

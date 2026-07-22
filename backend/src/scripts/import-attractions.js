@@ -48,6 +48,7 @@ async function main() {
   await addColumn(connection, 'source_image', 'VARCHAR(500) NULL AFTER image_url');
   await addColumn(connection, 'source_pdf', 'VARCHAR(500) NULL AFTER source_image');
   await addColumn(connection, 'is_bookable', 'BOOLEAN NOT NULL DEFAULT FALSE AFTER is_active');
+  await addColumn(connection, 'created_by_user_id', 'INT NULL AFTER category_id');
   await connection.query('CREATE TABLE IF NOT EXISTS dataset_imports (dataset_key VARCHAR(80) PRIMARY KEY, dataset_version CHAR(64) NOT NULL, imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)');
 
   const [imports] = await connection.query('SELECT dataset_version FROM dataset_imports WHERE dataset_key = ?', ['atractivos_tur']);

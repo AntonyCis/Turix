@@ -51,6 +51,7 @@ CREATE TABLE trips (
     longitude DECIMAL(10,7) NULL,
     available_slots INT NOT NULL DEFAULT 0,
     category_id INT NOT NULL,
+    created_by_user_id INT NULL,
     price DECIMAL(10,2) NOT NULL,
     duration_days INT NOT NULL DEFAULT 1,
     image_url VARCHAR(500),
@@ -59,9 +60,11 @@ CREATE TABLE trips (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE INDEX idx_code (code),
     INDEX idx_category (category_id),
+    INDEX idx_created_by_user (created_by_user_id),
     INDEX idx_active (is_active),
     INDEX idx_price (price),
-    FOREIGN KEY (category_id) REFERENCES categories(id)
+    FOREIGN KEY (category_id) REFERENCES categories(id),
+    FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================

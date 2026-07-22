@@ -16,6 +16,7 @@ import TripDetailPage from './pages/TripDetailPage';
 import CartPage from './pages/CartPage';
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 import DashboardPage from './pages/admin/DashboardPage';
+import OrdersPage from './pages/admin/OrdersPage';
 import TripFormPage from './pages/admin/TripFormPage';
 
 function ProtectedRoute({ children, adminOnly = false }) {
@@ -62,6 +63,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <TripFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/orders"
+        element={
+          <ProtectedRoute adminOnly>
+            <OrdersPage />
           </ProtectedRoute>
         }
       />

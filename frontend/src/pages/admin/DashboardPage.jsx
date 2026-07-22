@@ -71,7 +71,7 @@ function DashboardPage() {
       <div className="container">
         <header className="admin-console__hero">
           <div><p className="section-kicker">Operacion Turix</p><h1>Catalogo bajo control.</h1><p>Gestiona fichas, experiencias reservables y la presencia publica de cada destino.</p></div>
-          <Link to="/admin/trips/new" className="btn btn--primary admin-console__create"><span>+</span> Nuevo registro</Link>
+          <div className="admin-console__actions"><Link to="/admin/orders" className="btn btn--secondary">Ver reservas</Link><Link to="/admin/trips/new" className="btn btn--primary admin-console__create"><span>+</span> Nuevo registro</Link></div>
         </header>
 
         <section className="admin-stats" aria-label="Resumen del catalogo">
