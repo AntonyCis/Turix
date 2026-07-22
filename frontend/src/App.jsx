@@ -4,9 +4,11 @@ import { AnimatePresence } from 'framer-motion';
 import Lenis from 'lenis';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { TravelPlannerProvider } from './context/TravelPlannerContext';
 import Preloader from './components/Preloader';
 import Navbar from './components/Navbar';
 import ServerBadge from './components/ServerBadge';
+import TravelAdvisor from './components/TravelAdvisor';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import CatalogPage from './pages/CatalogPage';
@@ -129,6 +131,7 @@ function AppContent() {
             <span>© {new Date().getFullYear()}</span>
           </footer>
           <ServerBadge />
+          <TravelAdvisor />
         </div>
       )}
     </SmoothScroll>
@@ -139,9 +142,11 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
+        <TravelPlannerProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </TravelPlannerProvider>
       </CartProvider>
     </AuthProvider>
   );

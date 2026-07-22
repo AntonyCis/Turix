@@ -18,6 +18,7 @@ WORKDIR /app
 RUN addgroup -g 1001 appgroup && adduser -u 1001 -G appgroup -s /bin/sh -D appuser
 COPY --from=backend-builder /app/node_modules ./node_modules
 COPY backend/src ./src
+COPY atractivos_tur.json ./data/atractivos_tur.json
 COPY --from=frontend-builder /app/frontend/dist ./public
 USER appuser
 EXPOSE 3000

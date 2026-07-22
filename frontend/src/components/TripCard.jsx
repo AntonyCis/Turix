@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 
-function TripCard({ trip, index = 0 }) {
+function TripCard({ trip, index = 0, saved = false, compared = false, onSave, onCompare, onFocus }) {
   const imageUrl = trip.image_url || `https://picsum.photos/seed/${trip.code}/800/1000`;
 
   return (
-    <article className="card">
+    <article className="card" onMouseEnter={onFocus} onFocus={onFocus}>
       <Link to={`/trips/${trip.id}`} className="card__image-link" aria-label={`Ver detalles de ${trip.name}`}>
         <img
           src={imageUrl}
@@ -24,9 +24,17 @@ function TripCard({ trip, index = 0 }) {
         <div className="card__footer">
           <div className="card__meta">
             <span className="card__meta-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5.1 7-12A7 7 0 1 0 5 9c0 6.9 7 12 7 12Z"/><circle cx="12" cy="9" r="2"/></svg>{trip.destination}</span>
-            <span className="card__meta-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg>{trip.duration_days} dia{trip.duration_days > 1 ? 's' : ''}</span>
+            <span className="card__meta-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg>{trip.attraction_type || `${trip.duration_days} dia${trip.duration_days > 1 ? 's' : ''}`}</span>
           </div>
-          <div className="card__price">${Number(trip.price).toLocaleString('es-EC', { minimumFractionDigits: 2 })}<small>/ persona</small></div>
+          {trip.is_bookable ? <div className="card__price">${Number(trip.price).toLocaleString('es-EC', { minimumFractionDigits: 2 })}<small>/ persona</small></div> : <div className="card__price"><span>Explorar</span><small>Jerarquía {trip.hierarchy || 'por confirmar'}</small></div>}
+        </div>
+        <div className="card__actions">
+          <button type="button" className={`card__action ${saved ? 'card__action--active' : ''}`} onClick={() => onSave?.(trip)} aria-pressed={saved}>
+            <span aria-hidden="true">{saved ? '♥' : '♡'}</span>{saved ? 'Guardado' : 'Guardar'}
+          </button>
+          <button type="button" className={`card__action ${compared ? 'card__action--active' : ''}`} onClick={() => onCompare?.(trip)} aria-pressed={compared}>
+            <span aria-hidden="true">⇄</span>{compared ? 'En comparación' : 'Comparar'}
+          </button>
         </div>
       </div>
     </article>

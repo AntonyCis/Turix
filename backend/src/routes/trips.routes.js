@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { listTrips, listCategories, getTripById, createTrip, updateTrip, deleteTrip } = require('../controllers/trips.controller');
+const { listTrips, listCategories, listFilters, getTripById, createTrip, updateTrip, deleteTrip } = require('../controllers/trips.controller');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 // Rutas públicas
 router.get('/', listTrips);
 router.get('/categories', listCategories);
+router.get('/filters', listFilters);
 router.get('/:id', getTripById);
 
 // Rutas protegidas (admin)

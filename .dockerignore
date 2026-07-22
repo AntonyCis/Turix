@@ -1,0 +1,11 @@
+# Local dependencies are platform-specific and must never be copied into Linux images.
+**/node_modules
+**/dist
+
+# Development-only files
+.git
+.gitignore
+.env
+*.log
+coverage
+.DS_Store

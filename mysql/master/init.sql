@@ -1,10 +1,16 @@
+-- Archivo codificado en UTF-8 sin BOM.
+-- Fuerza la codificación del cliente que ejecuta este script.
+SET NAMES utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
 -- ============================================
 -- TURIX - Sistema de Gestión de Viajes Turísticos
 -- Schema + Seed Data
 -- Motor: MySQL 8.0 con InnoDB
 -- ============================================
 
-CREATE DATABASE IF NOT EXISTS turix_db;
+CREATE DATABASE IF NOT EXISTS turix_db
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_0900_ai_ci;
 USE turix_db;
 
 -- ============================================
@@ -41,6 +47,8 @@ CREATE TABLE trips (
     name VARCHAR(200) NOT NULL,
     description TEXT NOT NULL,
     destination VARCHAR(200) NOT NULL,
+    latitude DECIMAL(10,7) NULL,
+    longitude DECIMAL(10,7) NULL,
     available_slots INT NOT NULL DEFAULT 0,
     category_id INT NOT NULL,
     price DECIMAL(10,2) NOT NULL,
@@ -137,3 +145,12 @@ INSERT INTO trips (code, name, description, destination, available_slots, catego
 ('MAN-001', 'Playa de los Frailes & Puerto López',
  'Relax total en la playa más hermosa de Ecuador continental. Avistamiento de ballenas jorobadas (junio-septiembre), visita a Isla de la Plata y tour por el Parque Nacional Machalilla.',
  'Puerto López, Manabí', 18, 3, 220.00, 3, '/images/frailes.jpg');
+-- Coordenadas iniciales para el mapa interactivo.
+UPDATE trips SET latitude = -0.7400000, longitude = -90.3100000 WHERE code = 'GAL-001';
+UPDATE trips SET latitude = -0.1800000, longitude = -78.4700000 WHERE code = 'QUI-001';
+UPDATE trips SET latitude = -1.8300000, longitude = -80.7500000 WHERE code = 'MON-001';
+UPDATE trips SET latitude = -0.6700000, longitude = -76.4000000 WHERE code = 'YAS-001';
+UPDATE trips SET latitude = -2.9000000, longitude = -79.0000000 WHERE code = 'CUE-001';
+UPDATE trips SET latitude = -1.4000000, longitude = -78.4200000 WHERE code = 'BAN-001';
+UPDATE trips SET latitude = 0.2300000, longitude = -78.2600000 WHERE code = 'OTA-001';
+UPDATE trips SET latitude = -1.5500000, longitude = -80.8100000 WHERE code = 'MAN-001';

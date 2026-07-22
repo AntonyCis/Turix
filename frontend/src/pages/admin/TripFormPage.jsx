@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/client';
+
+const LocationPicker = lazy(() => import('../../components/LocationPicker'));
 
 function TripFormPage() {
   const { id } = useParams();
@@ -15,12 +17,15 @@ function TripFormPage() {
     name: '',
     description: '',
     destination: '',
+    latitude: '',
+    longitude: '',
     available_slots: 10,
     category_id: '',
     price: '',
     duration_days: 1,
     image_url: '',
-    is_active: true
+    is_active: true,
+    is_bookable: false
   });
 
   useEffect(() => {
@@ -33,12 +38,15 @@ function TripFormPage() {
           name: t.name,
           description: t.description,
           destination: t.destination,
+          latitude: t.latitude ?? '',
+          longitude: t.longitude ?? '',
           available_slots: t.available_slots,
           category_id: t.category_id,
           price: t.price,
           duration_days: t.duration_days,
           image_url: t.image_url || '',
-          is_active: t.is_active
+          is_active: t.is_active,
+          is_bookable: Boolean(Number(t.is_bookable))
         });
       });
     }
@@ -100,6 +108,15 @@ function TripFormPage() {
             <input id="name" name="name" className="form-input" placeholder="Expedición Galápagos Premium" value={form.name} onChange={handleChange} required />
           </div>
 
+          <div className="form-location">
+            <div className="form-location__heading"><div><label className="form-label">Ubicación en el mapa</label><p>Estas coordenadas se verán en el mapa público.</p></div><span>{form.latitude && form.longitude ? 'Ubicación definida' : 'Pendiente de definir'}</span></div>
+            <div className="form-location__coordinates">
+              <div className="form-group"><label className="form-label" htmlFor="latitude">Latitud</label><input id="latitude" name="latitude" type="number" step="0.0000001" min="-90" max="90" className="form-input" placeholder="-0.1800000" value={form.latitude} onChange={handleChange} /></div>
+              <div className="form-group"><label className="form-label" htmlFor="longitude">Longitud</label><input id="longitude" name="longitude" type="number" step="0.0000001" min="-180" max="180" className="form-input" placeholder="-78.4700000" value={form.longitude} onChange={handleChange} /></div>
+            </div>
+            <Suspense fallback={<div className="location-picker location-picker--loading">Cargando selector de mapa...</div>}><LocationPicker latitude={form.latitude} longitude={form.longitude} onChange={(coords) => setForm((current) => ({ ...current, ...coords }))} /></Suspense>
+          </div>
+
           <div className="form-group">
             <label className="form-label" htmlFor="description">Descripción</label>
             <textarea id="description" name="description" className="form-textarea" value={form.description} onChange={handleChange} required rows={4} />
@@ -113,7 +130,7 @@ function TripFormPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label" htmlFor="price">Precio ($)</label>
-              <input id="price" name="price" type="number" step="0.01" className="form-input" value={form.price} onChange={handleChange} required min="0.01" />
+              <input id="price" name="price" type="number" step="0.01" className="form-input" value={form.price} onChange={handleChange} required={form.is_bookable} min="0" />
             </div>
             <div className="form-group">
               <label className="form-label" htmlFor="available_slots">Cupos</label>
@@ -123,6 +140,11 @@ function TripFormPage() {
               <label className="form-label" htmlFor="duration_days">Días</label>
               <input id="duration_days" name="duration_days" type="number" className="form-input" value={form.duration_days} onChange={handleChange} required min="1" />
             </div>
+          </div>
+
+          <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem' }}>
+            <input id="is_bookable" name="is_bookable" type="checkbox" checked={form.is_bookable} onChange={handleChange} style={{ width: '18px', height: '18px' }} />
+            <label htmlFor="is_bookable" className="form-label" style={{ textTransform: 'none', marginBottom: 0 }}>Disponible para reserva (requiere precio y cupos)</label>
           </div>
 
           <div className="form-group">

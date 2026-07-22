@@ -23,7 +23,7 @@ const serverListeners = new Set();
 api.interceptors.response.use(
   (response) => {
     const servedBy = response.headers['x-served-by'];
-    if (servedBy && servedBy !== lastServerId) {
+    if (servedBy) {
       lastServerId = servedBy;
       serverListeners.forEach(fn => fn(servedBy));
     }

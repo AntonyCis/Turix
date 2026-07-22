@@ -37,6 +37,8 @@ services:
     depends_on:
       db_master:
         condition: service_healthy
+      catalog_seed:
+        condition: service_completed_successfully
     networks:
       - frontend
       - backend
@@ -59,6 +61,8 @@ services:
     depends_on:
       db_master:
         condition: service_healthy
+      catalog_seed:
+        condition: service_completed_successfully
     networks:
       - frontend
       - backend
@@ -81,10 +85,32 @@ services:
     depends_on:
       db_master:
         condition: service_healthy
+      catalog_seed:
+        condition: service_completed_successfully
     networks:
       - frontend
       - backend
     restart: always
+
+  # =============================================
+  # CATALOGO NACIONAL (idempotente)
+  # =============================================
+  catalog_seed:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["node", "src/scripts/import-attractions.js"]
+    environment:
+      - DB_MASTER_HOST=db_master
+      - DB_NAME=turix_db
+      - DB_USER=turix_user
+      - DB_PASSWORD=turix_secret
+    depends_on:
+      db_master:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: "no"
 
   # =============================================
   # BASE DE DATOS - MASTER
@@ -92,7 +118,7 @@ services:
   db_master:
     image: mysql:8.0
     container_name: turix-db-master
-    command: --default-authentication-plugin=mysql_native_password --server-id=1 --log-bin=mysql-bin --binlog-format=ROW --binlog-do-db=turix_db --sync-binlog=1 --innodb-flush-log-at-trx-commit=1
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci --server-id=1 --log-bin=mysql-bin --binlog-format=ROW --binlog-do-db=turix_db --sync-binlog=1 --innodb-flush-log-at-trx-commit=1
     environment:
       MYSQL_DATABASE: turix_db
       MYSQL_USER: turix_user
@@ -118,7 +144,7 @@ services:
   db_slave:
     image: mysql:8.0
     container_name: turix-db-slave
-    command: --default-authentication-plugin=mysql_native_password --server-id=2 --relay-log=relay-log --log-bin=mysql-bin --read-only=1 --binlog-do-db=turix_db
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci --server-id=2 --relay-log=relay-log --log-bin=mysql-bin --read-only=1 --binlog-do-db=turix_db
     environment:
       MYSQL_DATABASE: turix_db
       MYSQL_USER: turix_user

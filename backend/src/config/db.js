@@ -11,6 +11,7 @@ const masterPool = mysql.createPool({
   database: process.env.DB_NAME || 'turix_db',
   user: process.env.DB_USER || 'turix_user',
   password: process.env.DB_PASSWORD || 'turix_secret',
+  charset: 'utf8mb4',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -22,6 +23,7 @@ const slavePool = mysql.createPool({
   database: process.env.DB_NAME || 'turix_db',
   user: process.env.DB_USER || 'turix_user',
   password: process.env.DB_PASSWORD || 'turix_secret',
+  charset: 'utf8mb4',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -31,6 +33,9 @@ const slavePool = mysql.createPool({
  * Obtiene una conexión de lectura (slave con fallback a master).
  */
 async function getReadConnection() {
+  // The catalog is seeded into the master at startup. Use it by default until
+  // replication has been intentionally configured, preventing stale results.
+  if (process.env.DB_USE_SLAVE !== 'true') return masterPool;
   try {
     const conn = await slavePool.getConnection();
     conn.release();

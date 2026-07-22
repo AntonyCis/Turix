@@ -1,38 +1,39 @@
+# Prueba de carga segura: solo endpoints de lectura.
+# No autentica usuarios, no modifica fichas y no crea ordenes ni reservas.
 config:
   target: 'http://localhost:8080'
   phases:
-    - duration: 30
+    - duration: 15
       arrivalRate: 5
-      name: "Warm up"
-    - duration: 60
+      name: 'Calentamiento'
+    - duration: 45
       arrivalRate: 20
-      name: "Carga normal"
-    - duration: 30
-      arrivalRate: 50
-      name: "Pico de tráfico"
+      name: 'Carga sostenida'
+    - duration: 20
+      arrivalRate: 20
+      rampTo: 50
+      name: 'Pico gradual'
+  defaults:
+    headers:
+      Accept: 'application/json'
 
 scenarios:
-  - name: "Flujo de usuario: navegar y comprar"
+  - name: 'Exploracion publica del catalogo'
     flow:
       - get:
-          url: "/api/trips"
-      - think: 2
+          url: '/api/health'
       - get:
-          url: "/api/trips/1"
-      - think: 1
-      - post:
-          url: "/api/auth/login"
-          json:
-            email: "test@turix.ec"
-            password: "test123"
+          url: '/api/trips?limit=12'
           capture:
-            json: "$.token"
-            as: "authToken"
-      - post:
-          url: "/api/shop/checkout"
-          headers:
-            Authorization: "Bearer {{ authToken }}"
-          json:
-            items:
-              - trip_id: 1
-                quantity: 1
+            - json: '$.trips[0].id'
+              as: 'tripId'
+      - think: 1
+      - get:
+          url: '/api/trips/{{ tripId }}'
+      - get:
+          url: '/api/trips/categories'
+      - get:
+          url: '/api/trips/filters'
+      - think: 1
+      - get:
+          url: '/api/trips?limit=12&page=2'
